@@ -100,7 +100,7 @@ func TestWriteMo(t *testing.T) {
 	}
 
 	f1 := newFile("testWriteMo", t)
-	if err := WriteMo(f1, NewCatalogIterator(c)); err != nil {
+	if err := WriteMo(f1, c.Iter()); err != nil {
 		t.Fatal(err)
 	}
 	f1.Close()

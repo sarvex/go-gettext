@@ -88,30 +88,30 @@ func (c *Catalog) key(ctxt, id []byte) (string, error) {
 	return fmt.Sprintf("%s%s%s", ctxt, string('\x04'), id), nil
 }
 
-// ----------------------------------------------------------------------------
-
-// NewCatalogIterator returns a messages iterator from the provided catalog.
-func NewCatalogIterator(c *Catalog) *CatalogIterator {
+// Iter returns a messages iterator for this catalog.
+func (c *Catalog) Iter() Iterator {
 	// Note: as it is, new messages can't be added to the catalog when using
 	// the iterator, because it would result in unsorted keys.
 	sort.Strings(c.keys)
-	return &CatalogIterator{ctg: c}
+	return &catalogIterator{ctg: c}
 }
 
-// CatalogIterator iterates over the messages stored in a catalog.
-type CatalogIterator struct {
+// ----------------------------------------------------------------------------
+
+// catalogIterator iterates over the messages stored in a catalog.
+type catalogIterator struct {
 	ctg *Catalog
 	pos int
 }
 
 // Size returns the amount of messages provided by the iterator.
-func (i *CatalogIterator) Size() int {
+func (i *catalogIterator) Size() int {
 	return len(i.ctg.keys)
 }
 
 // Next returns the next message. At the end of the iteration,
 // io.EOF is returned as the error.
-func (i *CatalogIterator) Next() (*Message, error) {
+func (i *catalogIterator) Next() (*Message, error) {
 	if i.pos < len(i.ctg.keys) {
 		key := i.ctg.keys[i.pos]
 		msg := i.ctg.msgs[key]

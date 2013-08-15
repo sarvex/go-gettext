@@ -300,7 +300,7 @@ func (w *moWriter) writeHeader(header moHeader) error {
 	if err := binary.Write(w.writer, binary.LittleEndian, moRevision{}); err != nil {
 		return err
 	}
-	// byte 8-24: header values.
+	// bytes 8-24: header values.
 	if err := binary.Write(w.writer, binary.LittleEndian, header); err != nil {
 		return err
 	}
@@ -315,8 +315,8 @@ func (w *moWriter) writeMessage(tableOffset, msgOffset uint32, bytes []byte) err
 	if err := w.seek(int64(tableOffset)); err != nil {
 		return err
 	}
-	table := []uint32{uint32(len(bytes)), msgOffset}
-	if err := binary.Write(w.writer, binary.LittleEndian, table); err != nil {
+	pos := moPosition{uint32(len(bytes)), msgOffset}
+	if err := binary.Write(w.writer, binary.LittleEndian, pos); err != nil {
 		return err
 	}
 	// Increment offset by the amount we have written.
@@ -325,15 +325,12 @@ func (w *moWriter) writeMessage(tableOffset, msgOffset uint32, bytes []byte) err
 	if err := w.seek(int64(msgOffset)); err != nil {
 		return err
 	}
+	bytes = append(bytes, nulBytes...)
 	if err := binary.Write(w.writer, binary.LittleEndian, bytes); err != nil {
 		return err
 	}
-	// Append the NUL char separator.
-	if err := binary.Write(w.writer, binary.LittleEndian, nulBytes); err != nil {
-		return err
-	}
 	// Increment offset by the amount we have written.
-	w.offset += int64(len(bytes) + 1) // +1 for the NUL char separator.
+	w.offset += int64(len(bytes))
 	return nil
 }
 
